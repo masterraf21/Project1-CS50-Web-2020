@@ -7,8 +7,10 @@ from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_login import LoginManager
+from app.config import Config
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):

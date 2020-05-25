@@ -53,7 +53,18 @@ class Book():
         self.author = author
         self.title = title
         self.year = year
-    # Static methods for searching book based on their attributes
+
+    # Assume every response tuple is in this form:
+    # (id,isbn,author,title,year)
+    # We will manually wrap response tuple to json to avoid any issues
+    @staticmethod
+    def jsonifyBook(btuple: tuple):
+        book_json = {"id": btuple[0], "isbn": btuple[1],
+                     "author": btuple[2], "year": btuple[3], "title": btuple[4]}
+        book_json = json.dumps(book_json)
+        return book_json
+
+     # Static methods for searching book based on their attributes
     # These methods will return json
 
     @staticmethod
@@ -62,7 +73,7 @@ class Book():
         response = db.session.execute(
             "SELECT * from books WHERE id = :id", {"id": id}).fetchone()
         if response != None:
-            return json.dumps(tuple(response))
+            return jsonifyBook(response)
         else:
             return None
 
@@ -72,7 +83,7 @@ class Book():
         response = db.session.execute(
             "SELECT * from books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
         if response != None:
-            return json.dumps(tuple(response))
+            return jsonifyBook(response)
         else:
             return None
 
@@ -84,7 +95,7 @@ class Book():
             "SELECT * from books where author = :author", {"author": "%"+author+"%"}).fetchmany(40)
         if response != None:
             for res in response:
-                books.append(json.dumps(tuple(res)))
+                books.append(jsonifyBook(res))
             return books
         else:
             return None
@@ -97,7 +108,7 @@ class Book():
             "SELECT * FROM books WHERE title = :title", {"title": "%"+title+"%"}).fetchmany(40)
         if response != None:
             for res in response:
-                books.append(json.dumps(tuple(res)))
+                books.append(jsonifyBook(res))
             return books
         else:
             return None
@@ -110,7 +121,7 @@ class Book():
             "SELECT * FROM books WHERE year = :year", {"year": "%"+year+"%"})
         if response != None:
             for res in response:
-                books.append(json.dumps(tuple(res)))
+                books.append(jsonifyBook(res))
             return books
         else:
             return None
@@ -118,7 +129,7 @@ class Book():
     @classmethod
     def getBookfromJSON(cls, book_json):
         b = json.loads(book_json)
-        return cls(b[0], b[1], b[2], b[3], b[4])
+        return cls(b['id'], b['isbn'], b['author'], b['year'], b['title'])
 
 
 class Review():
@@ -128,6 +139,17 @@ class Review():
         self.review = review
         self.user_id = user_id
         self.book_id = book_id
+
+    # Assume that every review tuple is in this format:
+    # (id,rating,review,user_id,book_id)
+    # We will manually wrap the tuple to json format
+
+    @staticmethod
+    def jsonifyReview(rtuple: tuple):
+        review_json = {"id": rtuple[0], "rating": rtuple[1],
+                       "review": rtuple[2], "user_id": rtuple[3], "book_id": rtuple[4]}
+        review_json = json.dumps(review_json)
+        return review_json
 
     @staticmethod
     def create(rating, review, user_id, book_id):
@@ -141,7 +163,7 @@ class Review():
         response = db.session.execute(
             "SELECT * FROM reviews where user_id = :user_id AND book_id = :book_id", {"user_id": user_id, "book_id": book_id}).fetchone()
         if response != None:
-            return json.dumps(response)
+            return jsonifyReview(response)
         else:
             return None
 
@@ -153,7 +175,7 @@ class Review():
             "SELECT * FROM reviews WHERE user_id = :user_id", {"user_id": user_id}).fetchmany(40)
         if response != None:
             for res in response:
-                reviews.append(json.dumps(tuple(res)))
+                reviews.append(jsonifyReview(res))
             return reviews
         else:
             return None
@@ -166,7 +188,7 @@ class Review():
             "SELECT * FROM reviews WHERE book_id = :book_", {"book_id": book_id}).fetchmany(40)
         if response != None:
             for res in response:
-                reviews.append(json.dumps(tuple(res)))
+                reviews.append(jsonifyReview(res))
             return reviews
         else:
             return None
@@ -178,7 +200,7 @@ class Review():
         total_rating = 0
         for review in list_of_reviews:
             review = json.loads(review)
-            total_rating += review[1] #review.rating
+            total_rating += review['rating']
         avg_rating = float(total_rating) / float(count)
 
         return avg_rating
@@ -186,4 +208,4 @@ class Review():
     @classmethod
     def getReviewFromJSON(cls, review_json):
         r = json.loads(review_json)
-        return cls(r[0], r[1], r[2], r[3])
+        return cls(r['id'], r['rating'], r['review'], r['user_id'], r['book_id'])

@@ -31,4 +31,4 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
-from app import routes
+from app import routes, errors, models

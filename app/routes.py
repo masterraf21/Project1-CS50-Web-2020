@@ -65,10 +65,21 @@ def register():
     return render_template('register.html', form=form, title='Register')
 
 
-@app.route('/search/<int:isbn>', methods=['GET'])
+@app.route('/search/<int:isbn>', methods=['GET', 'POST'])
 @login_required
 def books(isbn):
-    pass
+    # Create form 
+    form = SearchForm()
+    
+
+@app.route('/revsubmit', methods=['POST'])
+@login_required
+def revsubmit():
+    # Get session's book json
+    temp = session['books']
+    # Create a book object
+    book = Book.getBookfromJSON(temp)
+    return render_template('review_message.html', status=session['reviewStatus'], book=book, )
 
 
 @app.route('/book/<int:book_id>', methods=['GET', 'POST'])
@@ -112,10 +123,10 @@ def books(book_id):
             Review.create(form.rating.data,form.review.data,current_user.id,book.id)
             # Set session var review
             session['reviewStatus'] = 1
-            # return redirect(url_for('revsubmit'))
+            return redirect(url_for('revsubmit'))
         else:
             session['reviewStatus'] = 0
-            # return redirect(url_for('revsubmit'))
+            return redirect(url_for('revsubmit'))
 
     return render_template('book.html', book=book, form=form, greads=greadsObject, avgRating=breview_avgrating, ratingCount=breview_count)
 

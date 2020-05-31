@@ -52,7 +52,7 @@ class User(UserMixin):
 
 def jsonifyBook(btuple: tuple):
     book_json = {"id": btuple[0], "isbn": btuple[1],
-                 "author": btuple[2], "year": btuple[3], "title": btuple[4]}
+                 "author": btuple[2], "year": btuple[4], "title": btuple[3]}
     book_json = json.dumps(book_json)
     return book_json
 

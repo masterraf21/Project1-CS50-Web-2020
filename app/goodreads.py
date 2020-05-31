@@ -26,3 +26,5 @@ class Goodreads():
             self.rating_count = None
             self.average_rating = None
             self.sucess = False
+
+

@@ -6,10 +6,6 @@ from app.forms import *
 from app.goodreads import Goodreads
 from werkzeug.urls import url_parse
 
-# Add decorator : @login_required for protecting some routes from anonymous user
-
-# TODO API for books by isbn
-
 
 @app.route('/')
 @app.route('/index')
@@ -157,10 +153,36 @@ def books(book_id):
 
         return redirect(url_for('revsubmit'))
 
-
     return render_template('book.html', book=book, form=form, greads=greadsObject, avgRating=breview_avgrating, ratingCount=breview_count)
 
+
 @app.route('/api/<isbn>')
-@login_required
+# @login_required
 def api(isbn):
-    pass
+    # Get the data from database + goodreads
+    data_db = Book.getBook_isbn(isbn)
+    if data_db is None:
+        return abort(404)
+    else:
+        data_greads = Goodreads(isbn)
+        data_greads.getGoodreadsData()
+    # Loads the json
+        data_db = json.loads(data_db)
+#     {
+#     "title": "Memory",
+#     "author": "Doug Lloyd",
+#     "year": 2015,
+#     "isbn": "1632168146",
+#     "review_count": 28,
+#     "average_score": 5.0
+# }
+        # Create JSON skeleton
+        response = {
+            "title": data_db["title"],
+            "author": data_db["author"],
+            "year": data_db["year"],
+            "isbn": data_db["isbn"],
+            "review_count": data_greads.rating_count,
+            "average_score": data_greads.average_rating
+        }
+        return jsonify(response), 200

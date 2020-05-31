@@ -45,6 +45,17 @@ class User(UserMixin):
         else:
             return None
 
+# Assume every response tuple is in this form:
+# (id,isbn,author,title,year)
+# We will manually wrap response tuple to json to avoid any issues
+
+
+def jsonifyBook(btuple: tuple):
+    book_json = {"id": btuple[0], "isbn": btuple[1],
+                 "author": btuple[2], "year": btuple[3], "title": btuple[4]}
+    book_json = json.dumps(book_json)
+    return book_json
+
 
 class Book():
     def __init__(self, id, isbn, author, title, year):
@@ -54,15 +65,7 @@ class Book():
         self.title = title
         self.year = year
 
-    # Assume every response tuple is in this form:
-    # (id,isbn,author,title,year)
-    # We will manually wrap response tuple to json to avoid any issues
-    @staticmethod
-    def jsonifyBook(btuple: tuple):
-        book_json = {"id": btuple[0], "isbn": btuple[1],
-                     "author": btuple[2], "year": btuple[3], "title": btuple[4]}
-        book_json = json.dumps(book_json)
-        return book_json
+    # @staticmethod
 
      # Static methods for searching book based on their attributes
     # These methods will return json
@@ -130,7 +133,16 @@ class Book():
     def getBookfromJSON(cls, book_json):
         b = json.loads(book_json)
         return cls(b['id'], b['isbn'], b['author'], b['year'], b['title'])
+        
 
+# Assume that every review tuple is in this format:
+    # (id,rating,review,user_id,book_id)
+    # We will manually wrap the tuple to json format
+def jsonifyReview(rtuple: tuple):
+    review_json = {"id": rtuple[0], "rating": rtuple[1],
+                   "review": rtuple[2], "user_id": rtuple[3], "book_id": rtuple[4]}
+    review_json = json.dumps(review_json)
+    return review_json
 
 class Review():
     def __init__(self, id, rating, review, user_id, book_id):
@@ -140,17 +152,7 @@ class Review():
         self.user_id = user_id
         self.book_id = book_id
 
-    # Assume that every review tuple is in this format:
-    # (id,rating,review,user_id,book_id)
-    # We will manually wrap the tuple to json format
-
     @staticmethod
-    def jsonifyReview(rtuple: tuple):
-        review_json = {"id": rtuple[0], "rating": rtuple[1],
-                       "review": rtuple[2], "user_id": rtuple[3], "book_id": rtuple[4]}
-        review_json = json.dumps(review_json)
-        return review_json
-
     @staticmethod
     def create(rating, review, user_id, book_id):
         db.session.execute(
